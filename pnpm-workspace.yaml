@@ -1,0 +1,4 @@
+# foundry-vtt-types depends on git-hosted packages (pixi.js, @pixi/basis), which pnpm 11 blocks by default.
+blockExoticSubdeps: false
+allowBuilds:
+  '@league-of-foundry-developers/foundry-vtt-types': true

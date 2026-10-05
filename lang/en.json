@@ -1,0 +1,49 @@
+{
+  "CCS5E": {
+    "Settings": {
+      "Enabled": {
+        "Name": "Enable Color Coding",
+        "Hint": "Color spells on character sheets by their school of magic."
+      },
+      "OnlyPrepared": {
+        "Name": "Only Color Prepared Spells",
+        "Hint": "Leave unprepared spells uncolored. Cantrips and spells that do not need preparing are always colored."
+      },
+      "AddBorder": {
+        "Name": "Include Left Border",
+        "Hint": "Draw a solid border in the school color on the left edge of each spell."
+      },
+      "Style": {
+        "Name": "Fill Style",
+        "Hint": "How the school color is drawn behind the spell.",
+        "Choices": {
+          "Solid": "Solid",
+          "Gradient": "Gradient (fades out)"
+        }
+      },
+      "Width": {
+        "Name": "Fill Length",
+        "Hint": "Whether the color covers only the spell name or the whole row.",
+        "Choices": {
+          "Name": "Name only",
+          "Full": "Full row"
+        }
+      },
+      "Intensity": {
+        "Name": "Color Intensity",
+        "Hint": "How strong the fill color is, from 0 (invisible) to 100 (opaque)."
+      },
+      "Color": {
+        "Hint": "The color used for spells of this school.",
+        "abj": "Abjuration Color",
+        "con": "Conjuration Color",
+        "div": "Divination Color",
+        "enc": "Enchantment Color",
+        "evo": "Evocation Color",
+        "ill": "Illusion Color",
+        "nec": "Necromancy Color",
+        "trs": "Transmutation Color"
+      }
+    }
+  }
+}

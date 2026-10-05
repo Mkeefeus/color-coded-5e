@@ -1,0 +1,43 @@
+{
+  "id": "color-coded-spells-5e",
+  "title": "Color Coded Spells 5e",
+  "description": "A module that changes the appearance of spells in D&D 5e to be color coded based on their school of magic.",
+  "version": "1.0.0",
+  "compatibility": {
+    "minimum": 13,
+    "verified": "13.351"
+  },
+  "relationships": {
+    "systems": [
+      {
+        "id": "dnd5e",
+        "type": "system",
+        "manifest": "https://github.com/foundryvtt/dnd5e/releases/download/release-5.3.3/system.json",
+        "compatibility": {
+          "minimum": "5.3.0",
+          "verified": "5.3.3"
+        }
+      }
+    ]
+  },
+  "authors": [
+    {
+      "name": "Malcolm Keefe"
+    }
+  ],
+  "esmodules": ["dist/main.js"],
+  "styles": ["styles/color-coded-spells.css"],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "flags": {
+    "hotReload": {
+      "extensions": ["css", "json"],
+      "paths": ["styles/", "lang/"]
+    }
+  }
+}
