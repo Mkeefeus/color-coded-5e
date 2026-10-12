@@ -1,11 +1,11 @@
 {
-  "id": "color-coded-spells-5e",
-  "title": "Color Coded Spells 5e",
-  "description": "A module that changes the appearance of spells in D&D 5e to be color coded based on their school of magic.",
+  "id": "color-coded-5e",
+  "title": "Color Coded 5e",
+  "description": "A module that changes the appearance of items in the D&D 5e character sheet to be color coded.",
   "version": "1.0.0",
-  "url": "https://github.com/Mkeefeus/color-coded-spells-5e",
-  "manifest": "https://github.com/Mkeefeus/color-coded-spells-5e/releases/latest/download/module.json",
-  "download": "https://github.com/Mkeefeus/color-coded-spells-5e/releases/latest/download/module.zip",
+  "url": "https://github.com/Mkeefeus/color-coded-5e",
+  "manifest": "https://github.com/Mkeefeus/color-coded-5e/releases/latest/download/module.json",
+  "download": "https://github.com/Mkeefeus/color-coded-5e/releases/latest/download/module.zip",
   "compatibility": {
     "minimum": 13,
     "verified": "13.351"
@@ -29,7 +29,7 @@
     }
   ],
   "esmodules": ["dist/main.js"],
-  "styles": ["styles/color-coded-spells.css"],
+  "styles": ["styles/color-coded-5e.css"],
   "languages": [
     {
       "lang": "en",

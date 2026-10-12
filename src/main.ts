@@ -19,7 +19,7 @@ interface Dnd5eConfig {
 
 type ActorSheetV2 = foundry.applications.sheets.ActorSheetV2.Any;
 
-const MODULE_ID = 'color-coded-spells-5e';
+const MODULE_ID = 'color-coded-5e';
 
 const DEFAULT_COLORS = {
   abj: '#00FFFF',
@@ -44,9 +44,9 @@ const rerenderSheets = () => {
 
 // Root attributes that the stylesheet keys off. The value of each is the setting with the same key.
 const ROOT_ATTRIBUTES = {
-  style: 'data-ccs5e-style',
-  width: 'data-ccs5e-width',
-  addBorder: 'data-ccs5e-add-border',
+  style: 'data-cc5e-style',
+  width: 'data-cc5e-width',
+  addBorder: 'data-cc5e-add-border',
 } as const;
 
 const applySettings = () => {
@@ -57,9 +57,9 @@ const applySettings = () => {
   const root = document.documentElement;
 
   for (const school of SCHOOL_KEYS) {
-    root.style.setProperty(`--ccs5e-color-${school}`, settings.get(MODULE_ID, school).css);
+    root.style.setProperty(`--cc5e-color-${school}`, settings.get(MODULE_ID, school).css);
   }
-  root.style.setProperty('--ccs5e-color-intensity', `${settings.get(MODULE_ID, 'intensity')}%`);
+  root.style.setProperty('--cc5e-color-intensity', `${settings.get(MODULE_ID, 'intensity')}%`);
 
   for (const [key, attribute] of Object.entries(ROOT_ATTRIBUTES) as [keyof typeof ROOT_ATTRIBUTES, string][]) {
     root.setAttribute(attribute, String(settings.get(MODULE_ID, key)));
@@ -127,8 +127,8 @@ const registerSettings = () => {
 
   settings.register(MODULE_ID, 'enabled', {
     scope: 'client',
-    name: 'CCS5E.Settings.Enabled.Name',
-    hint: 'CCS5E.Settings.Enabled.Hint',
+    name: 'CC5e.Settings.Enabled.Name',
+    hint: 'CC5e.Settings.Enabled.Hint',
     config: true,
     type: Boolean,
     default: false,
@@ -137,8 +137,8 @@ const registerSettings = () => {
 
   settings.register(MODULE_ID, 'onlyPrepared', {
     scope: 'client',
-    name: 'CCS5E.Settings.OnlyPrepared.Name',
-    hint: 'CCS5E.Settings.OnlyPrepared.Hint',
+    name: 'CC5e.Settings.OnlyPrepared.Name',
+    hint: 'CC5e.Settings.OnlyPrepared.Hint',
     config: true,
     type: Boolean,
     default: false,
@@ -147,8 +147,8 @@ const registerSettings = () => {
 
   settings.register(MODULE_ID, 'addBorder', {
     scope: 'client',
-    name: 'CCS5E.Settings.AddBorder.Name',
-    hint: 'CCS5E.Settings.AddBorder.Hint',
+    name: 'CC5e.Settings.AddBorder.Name',
+    hint: 'CC5e.Settings.AddBorder.Hint',
     config: true,
     type: Boolean,
     default: true,
@@ -157,13 +157,13 @@ const registerSettings = () => {
 
   settings.register(MODULE_ID, 'style', {
     scope: 'client',
-    name: 'CCS5E.Settings.Style.Name',
-    hint: 'CCS5E.Settings.Style.Hint',
+    name: 'CC5e.Settings.Style.Name',
+    hint: 'CC5e.Settings.Style.Hint',
     config: true,
     type: String,
     choices: {
-      solid: 'CCS5E.Settings.Style.Choices.Solid',
-      gradient: 'CCS5E.Settings.Style.Choices.Gradient',
+      solid: 'CC5e.Settings.Style.Choices.Solid',
+      gradient: 'CC5e.Settings.Style.Choices.Gradient',
     },
     default: 'gradient',
     onChange: applySettings,
@@ -171,13 +171,13 @@ const registerSettings = () => {
 
   settings.register(MODULE_ID, 'width', {
     scope: 'client',
-    name: 'CCS5E.Settings.Width.Name',
-    hint: 'CCS5E.Settings.Width.Hint',
+    name: 'CC5e.Settings.Width.Name',
+    hint: 'CC5e.Settings.Width.Hint',
     config: true,
     type: String,
     choices: {
-      name: 'CCS5E.Settings.Width.Choices.Name',
-      full: 'CCS5E.Settings.Width.Choices.Full',
+      name: 'CC5e.Settings.Width.Choices.Name',
+      full: 'CC5e.Settings.Width.Choices.Full',
     },
     default: 'name',
     onChange: applySettings,
@@ -185,8 +185,8 @@ const registerSettings = () => {
 
   settings.register(MODULE_ID, 'intensity', {
     scope: 'client',
-    name: 'CCS5E.Settings.Intensity.Name',
-    hint: 'CCS5E.Settings.Intensity.Hint',
+    name: 'CC5e.Settings.Intensity.Name',
+    hint: 'CC5e.Settings.Intensity.Hint',
     config: true,
     type: Number,
     range: { min: 0, max: 100, step: 1 },
@@ -197,8 +197,8 @@ const registerSettings = () => {
   for (const school of SCHOOL_KEYS) {
     settings.register(MODULE_ID, school, {
       scope: 'client',
-      name: `CCS5E.Settings.Color.${school}`,
-      hint: 'CCS5E.Settings.Color.Hint',
+      name: `CC5e.Settings.Color.${school}`,
+      hint: 'CC5e.Settings.Color.Hint',
       config: true,
       type: new foundry.data.fields.ColorField({ required: true, nullable: false, initial: DEFAULT_COLORS[school] }),
       onChange: applySettings,
@@ -211,6 +211,9 @@ Hooks.once('init', () => {
   registerSettings();
   applySettings();
   Hooks.on('renderCharacterActorSheet', applyDataSchoolAttributes);
+  Hooks.on('dnd5e.getItemContextOptions', (item, menuItems) => {
+    console.log('CC5e: Context menu hook fired');
+  });
 });
 
 Hooks.once('ready', () => {

@@ -1,9 +1,9 @@
 {
-  "CCS5E": {
+  "CC5e": {
     "Settings": {
       "Enabled": {
         "Name": "Enable Color Coding",
-        "Hint": "Color spells on character sheets by their school of magic."
+        "Hint": "Enables the color coding of items"
       },
       "OnlyPrepared": {
         "Name": "Only Color Prepared Spells",

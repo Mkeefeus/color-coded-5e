@@ -1,6 +1,6 @@
 # Color Coded Spells 5e
 
-A FoundryVTT module that color-codes spells on the D&D 5e character sheet by school of magic.
+A FoundryVTT module that color-codes items on the D&D 5e character sheet.
 
 ## Targets
 
@@ -10,9 +10,9 @@ A FoundryVTT module that color-codes spells on the D&D 5e character sheet by sch
 
 ## Layout
 
-- `module.json`: manifest. Module id is `color-coded-spells-5e` and must match the folder name Foundry sees.
+- `module.json`: manifest. Module id is `color-coded-5e` and must match the folder name Foundry sees.
 - `src/main.ts`: TypeScript entry point. Built by Vite to `dist/main.js` (gitignored, referenced by `esmodules`).
-- `styles/color-coded-spells.css`: plain CSS, loaded directly by Foundry (not bundled) so hot reload works.
+- `styles/color-coded.css`: plain CSS, loaded directly by Foundry (not bundled) so hot reload works.
 - `lang/en.json`: localization.
 
 ## Commands (pnpm)
@@ -24,7 +24,7 @@ A FoundryVTT module that color-codes spells on the D&D 5e character sheet by sch
 
 ## Environment
 
-- Foundry runs in Docker (`felddy/foundryvtt:13`); this folder is bind-mounted to `/data/Data/modules/color-coded-spells-5e` in `~/Github/jaazdin-docker/jaazdin-compose.yaml`.
+- Foundry runs in Docker (`felddy/foundryvtt:13`); this folder is bind-mounted to `/data/Data/modules/color-coded-5e` in `~/Github/jaazdin-docker/jaazdin-compose.yaml`.
 - Hot reload is enabled: CSS, templates and lang files reload live. JS changes need a browser refresh; `module.json` changes need returning to setup and relaunching the world.
 
 ## Types
@@ -35,5 +35,5 @@ A FoundryVTT module that color-codes spells on the D&D 5e character sheet by sch
 
 ## Conventions
 
-- Prefix CSS classes and data attributes with `ccs5e` / use `data-school` to avoid collisions with other modules.
+- Prefix CSS classes and data attributes with `cc5e` / use `data-school` to avoid collisions with other modules.
 - Keep the school-to-color mapping in CSS custom properties so users/settings can override it later.
