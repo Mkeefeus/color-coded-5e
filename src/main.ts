@@ -131,7 +131,7 @@ const registerSettings = () => {
     hint: 'CCS5E.Settings.Enabled.Hint',
     config: true,
     type: Boolean,
-    default: true,
+    default: false,
     onChange: applySettings,
   });
 
