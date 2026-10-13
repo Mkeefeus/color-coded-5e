@@ -1,48 +1,58 @@
 {
   "CC5e": {
-    "Settings": {
-      "Enabled": {
-        "Name": "Enable Color Coding",
-        "Hint": "Enables the color coding of items"
+    "ContextMenu": {
+      "ColorTag": "Add Color Tag"
+    },
+    "ColorTagConfig": {
+      "Title": "Color Tag",
+      "Preview": "Preview",
+      "Appearance": "Appearance",
+      "Save": "Save",
+      "Remove": "Remove Tag",
+      "Conditions": {
+        "Label": "Conditions",
+        "Hint": "Only show the tag when required conditions are met.",
+        "Required": "Required",
+        "Ignored": "Not Required"
       },
-      "OnlyPrepared": {
-        "Name": "Only Color Prepared Spells",
-        "Hint": "Leave unprepared spells uncolored. Cantrips and spells that do not need preparing are always colored."
-      },
-      "AddBorder": {
-        "Name": "Include Left Border",
-        "Hint": "Draw a solid border in the school color on the left edge of each spell."
-      },
-      "Style": {
-        "Name": "Fill Style",
-        "Hint": "How the school color is drawn behind the spell.",
-        "Choices": {
-          "Solid": "Solid",
-          "Gradient": "Gradient (fades out)"
+      "Fields": {
+        "Color": {
+          "Label": "Color",
+          "Hint": "The color used to highlight this item."
+        },
+        "Intensity": {
+          "Label": "Intensity",
+          "Hint": "The level of color applied to the item."
+        },
+        "Style": {
+          "Label": "Style",
+          "Hint": "The style of the fill.",
+          "Options": {
+            "Solid": "Solid",
+            "Gradient": "Gradient"
+          }
+        },
+        "Width": {
+          "Label": "Width",
+          "Hint": "The width of the fill.",
+          "Options": {
+            "Name": "Name",
+            "Full": "Full"
+          }
+        },
+        "AddBorder": {
+          "Label": "Add Border",
+          "Hint": "Add a border to the left side of the fill."
+        },
+        "Equipped": {
+          "Label": "Equipped"
+        },
+        "Attuned": {
+          "Label": "Attuned"
+        },
+        "Prepared": {
+          "Label": "Prepared"
         }
-      },
-      "Width": {
-        "Name": "Fill Length",
-        "Hint": "Whether the color covers only the spell name or the whole row.",
-        "Choices": {
-          "Name": "Name only",
-          "Full": "Full row"
-        }
-      },
-      "Intensity": {
-        "Name": "Color Intensity",
-        "Hint": "How strong the fill color is, from 0 (invisible) to 100 (opaque)."
-      },
-      "Color": {
-        "Hint": "The color used for spells of this school.",
-        "abj": "Abjuration Color",
-        "con": "Conjuration Color",
-        "div": "Divination Color",
-        "enc": "Enchantment Color",
-        "evo": "Evocation Color",
-        "ill": "Illusion Color",
-        "nec": "Necromancy Color",
-        "trs": "Transmutation Color"
       }
     }
   }

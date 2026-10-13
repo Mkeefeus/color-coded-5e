@@ -1,0 +1,112 @@
+<div class='form-body'>
+  {{! Preview row. Mirrors a row from dnd5e's templates/inventory/inventory.hbs so the sheet's styles apply:
+        dnd5e scopes them under .dnd5e2 .items-section .item. The .dnd5e2 wrapper sits around the preview only,
+        so dnd5e's form styles (inputs, selects, fieldsets) don't restyle the rest of this window.
+        The sheet's columns (quantity, uses, controls), subtitle and tags need sheet data, so they're left out.
+        The module stylesheet colors the row once the data-cc5e attributes and variables are set on the li. }}
+  <fieldset>
+    <legend>{{localize 'CC5e.ColorTagConfig.Preview'}}</legend>
+    <div class='dnd5e2'>
+      <div class='items-section card'>
+        <ol class='item-list unlist'>
+          <li class='item' data-cc5e-preview>
+            <div class='item-row'>
+              <div class='item-name'>
+                {{dnd5e-icon document.img alt=document.name classes='item-image gold-icon'}}
+                <div class='name name-stacked'>
+                  <span class='title'>{{document.name}}</span>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>{{localize 'CC5e.ColorTagConfig.Appearance'}}</legend>
+    {{formGroup
+      tagFields.color
+      name='flags.color-coded-5e.color'
+      value=tag.color
+      rootId=rootId
+      label='CC5e.ColorTagConfig.Fields.Color.Label'
+      hint='CC5e.ColorTagConfig.Fields.Color.Hint'
+      localize=true
+    }}
+    {{formGroup
+      tagFields.intensity
+      name='flags.color-coded-5e.intensity'
+      value=tag.intensity
+      rootId=rootId
+      label='CC5e.ColorTagConfig.Fields.Intensity.Label'
+      hint='CC5e.ColorTagConfig.Fields.Intensity.Hint'
+      localize=true
+    }}
+    {{formGroup
+      tagFields.style
+      name='flags.color-coded-5e.style'
+      value=tag.style
+      rootId=rootId
+      label='CC5e.ColorTagConfig.Fields.Style.Label'
+      hint='CC5e.ColorTagConfig.Fields.Style.Hint'
+      localize=true
+    }}
+    {{formGroup
+      tagFields.width
+      name='flags.color-coded-5e.width'
+      value=tag.width
+      rootId=rootId
+      label='CC5e.ColorTagConfig.Fields.Width.Label'
+      hint='CC5e.ColorTagConfig.Fields.Width.Hint'
+      localize=true
+    }}
+    {{formGroup
+      tagFields.addBorder
+      name='flags.color-coded-5e.addBorder'
+      value=tag.addBorder
+      rootId=rootId
+      label='CC5e.ColorTagConfig.Fields.AddBorder.Label'
+      hint='CC5e.ColorTagConfig.Fields.AddBorder.Hint'
+      localize=true
+    }}
+  </fieldset>
+
+  {{#if hasConditions}}
+    <fieldset>
+      <legend>{{localize 'CC5e.ColorTagConfig.Conditions.Label'}}</legend>
+      <p class='hint'>{{localize 'CC5e.ColorTagConfig.Conditions.Hint'}}</p>
+      {{#if applicableConditions.attuned}}
+        {{formGroup
+          tagFields.conditions.attuned
+          name='flags.color-coded-5e.conditions.attuned'
+          value=tag.conditions.attuned
+          rootId=rootId
+          label='CC5e.ColorTagConfig.Fields.Attuned.Label'
+          localize=true
+        }}
+      {{/if}}
+      {{#if applicableConditions.equipped}}
+        {{formGroup
+          tagFields.conditions.equipped
+          name='flags.color-coded-5e.conditions.equipped'
+          value=tag.conditions.equipped
+          rootId=rootId
+          label='CC5e.ColorTagConfig.Fields.Equipped.Label'
+          localize=true
+        }}
+      {{/if}}
+      {{#if applicableConditions.prepared}}
+        {{formGroup
+          tagFields.conditions.prepared
+          name='flags.color-coded-5e.conditions.prepared'
+          value=tag.conditions.prepared
+          rootId=rootId
+          label='CC5e.ColorTagConfig.Fields.Prepared.Label'
+          localize=true
+        }}
+      {{/if}}
+    </fieldset>
+  {{/if}}
+</div>
