@@ -91,8 +91,8 @@ export const getApplicableConditions = (item: Item.Implementation): ApplicableCo
   };
 };
 
-// Whether every required condition that applies to the item currently holds, i.e. whether its tag should show.
-export const conditionsMet = (item: Item.Implementation, tag: ColorTag) => {
+// The required conditions that apply to the item but don't currently hold. Empty when the tag should show.
+export const getUnmetConditions = (item: Item.Implementation, tag: ColorTag): ConditionKey[] => {
   const applicable = getApplicableConditions(item);
   const system = itemSystem(item);
   const state: Record<ConditionKey, boolean> = {
@@ -100,10 +100,13 @@ export const conditionsMet = (item: Item.Implementation, tag: ColorTag) => {
     attuned: system.attuned === true,
     prepared: (system.prepared ?? 0) > 0,
   };
-  return (Object.keys(state) as ConditionKey[]).every(
-    (key) => tag.conditions[key] !== 'required' || !applicable[key] || state[key]
+  return (Object.keys(state) as ConditionKey[]).filter(
+    (key) => tag.conditions[key] === 'required' && applicable[key] && !state[key]
   );
 };
+
+// Whether every required condition that applies to the item currently holds, i.e. whether its tag should show.
+export const conditionsMet = (item: Item.Implementation, tag: ColorTag) => getUnmetConditions(item, tag).length === 0;
 
 export const applyTag = (element: HTMLElement, tag: ColorTag) => {
   element.setAttribute('data-cc5e', 'true');

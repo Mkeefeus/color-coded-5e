@@ -270,13 +270,19 @@ export class ColorTagConfig extends ItemSheetBase {
         action: 'remove',
       });
     }
+    const previewColumns = await getPreviewColumns(this.document);
+    log.debug(`Preparing color tag window for ${this.document.name} (${this.document.type})`, {
+      savedTag: tag ?? 'none (showing defaults)',
+      applicableConditions,
+      previewColumns,
+    });
     return Object.assign(context, {
       tag: tag ?? DEFAULTS,
       tagFields: TAG_FIELDS,
       buttons,
       hasConditions,
       applicableConditions,
-      previewColumns: await getPreviewColumns(this.document),
+      previewColumns,
     });
   }
 
@@ -296,16 +302,22 @@ export class ColorTagConfig extends ItemSheetBase {
     };
     const tag = resolveTag(expanded.flags?.[MODULE_ID] ?? {});
     // A cleared color text box submits '', which would make --cc5e-color invalid and hide the fill.
-    return tag.color ? tag : { ...tag, color: DEFAULTS.color };
+    if (!tag.color) {
+      log.debug('Color field is empty, previewing the default color');
+      return { ...tag, color: DEFAULTS.color };
+    }
+    return tag;
   }
 
   protected override async _onRender(context: DeepPartial<RenderContext>, options: DeepPartial<RenderOptions>) {
     await super._onRender(context, options);
     // Applies the tag or defaults to the preview on open
     const row = this.#previewRow();
-    if (row) {
-      applyTag(row, getColorTag(this.document) ?? DEFAULTS);
+    if (!row) {
+      log.warn('Color tag window has no preview row; check templates/color-tag-config.hbs');
+      return;
     }
+    applyTag(row, getColorTag(this.document) ?? DEFAULTS);
   }
 
   protected override async _onFirstRender(context: DeepPartial<RenderContext>, options: DeepPartial<RenderOptions>) {
@@ -316,7 +328,6 @@ export class ColorTagConfig extends ItemSheetBase {
         return;
       }
       const input = event.target;
-      log.debug(input);
       if (input.type === 'range') {
         this.#previewRow()?.style.setProperty('--cc5e-intensity', `${input.valueAsNumber}%`);
       } else if (input.type === 'color') {
@@ -331,11 +342,37 @@ export class ColorTagConfig extends ItemSheetBase {
     if (!element) {
       return;
     }
-    applyTag(element, this.#tagFromForm());
+    const tag = this.#tagFromForm();
+    this.#logPreviewChange(tag);
+    applyTag(element, tag);
+  }
+
+  // Changes can arrive many times a second while adjusting the color or intensity. Log only once they've settled,
+  // with the final tag. The preview itself still updates on every change.
+  #logPreviewChange = foundry.utils.debounce((tag: ColorTag) => log.debug('Form changed, updating preview', tag), 300);
+
+  // Runs on Save, after DocumentSheetV2 has turned the form into update data. fvtt-types calls the third argument
+  // formData, but at runtime it's that update data (e.g. { flags: { 'color-coded-5e': {...} } }).
+  protected override async _processSubmitData(
+    event: SubmitEvent,
+    form: HTMLFormElement,
+    submitData: foundry.applications.ux.FormDataExtended,
+    options?: unknown
+  ) {
+    log.debug(`Saving color tag for ${this.document.name}`, submitData);
+    await super._processSubmitData(event, form, submitData, options);
+    log.info(`Saved color tag for ${this.document.name}`, this.document.flags[MODULE_ID]);
   }
 
   static async #onRemove(this: ColorTagConfig) {
-    await this.document.update({ [`flags.-=${MODULE_ID}`]: null } as Item.UpdateData);
+    try {
+      await this.document.update({ [`flags.-=${MODULE_ID}`]: null } as Item.UpdateData);
+    } catch (error) {
+      // Keep the window open so the user can see nothing was removed.
+      log.error(`Failed to remove color tag from ${this.document.name}`, error);
+      return;
+    }
+    log.info(`Removed color tag from ${this.document.name}`);
     await this.close();
   }
 }
@@ -343,6 +380,7 @@ export class ColorTagConfig extends ItemSheetBase {
 // Open the color tag window for an item, reusing its window if one is already open.
 export const openColorTagConfig = (item: Item.Implementation) => {
   const existing = Object.values(item.apps).find((app) => app instanceof ColorTagConfig);
+  log.debug(`${existing ? 'Focusing the open' : 'Opening a'} color tag window for ${item.name}`);
   const app = existing ?? new ColorTagConfig({ document: item });
   void app.render({ force: true });
 };

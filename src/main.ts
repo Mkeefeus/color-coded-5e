@@ -1,5 +1,5 @@
 import { openColorTagConfig } from './color-tag-config';
-import { applyTag, conditionsMet, getColorTag, log } from './shared';
+import { MODULE_ID, applyTag, getColorTag, getUnmetConditions, log } from './shared';
 
 type ItemSheetV2 = foundry.applications.sheets.ItemSheetV2.Any;
 
@@ -38,15 +38,19 @@ Hooks.once('init', () => {
   Hooks.on('getHeaderControlsItemSheet5e', addControlHeaderMenuEntry);
   Hooks.on('renderBaseActorSheet', (app, element) => {
     const itemElements = element.querySelectorAll<HTMLElement>('li.item[data-item-id]');
+    // Collected for one summary per render rather than a line per row.
+    const colored: string[] = [];
+    const hidden: string[] = [];
     itemElements.forEach((itemElement) => {
       const itemId = itemElement.getAttribute('data-item-id');
       if (!itemId) {
-        log.warn('itemElement has no item id');
+        log.warn('Item row has an empty data-item-id', itemElement);
         clearRow(itemElement);
         return;
       }
       const item = app.actor.items.get(itemId);
       if (!item) {
+        log.warn(`Item row ${itemId} on ${app.actor.name}'s sheet has no matching item`, itemElement);
         clearRow(itemElement);
         return;
       }
@@ -55,15 +59,23 @@ Hooks.once('init', () => {
         clearRow(itemElement);
         return;
       }
-      if (!conditionsMet(item, colorTag)) {
+      const unmet = getUnmetConditions(item, colorTag);
+      if (unmet.length) {
+        hidden.push(`${item.name} (${unmet.join(', ')})`);
         clearRow(itemElement);
         return;
       }
       applyTag(itemElement, colorTag);
+      colored.push(item.name);
+    });
+    log.debug(`Rendered ${app.actor.name}'s sheet: ${itemElements.length} item rows`, {
+      colored,
+      hiddenByConditions: hidden,
     });
   });
 });
 
 Hooks.once('ready', () => {
-  log.info('ready');
+  // The version helps match a bug report to a release.
+  log.info(`ready (v${game.modules?.get(MODULE_ID)?.version ?? 'unknown'})`);
 });

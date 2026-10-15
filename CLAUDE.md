@@ -13,7 +13,7 @@ A FoundryVTT module that color-codes items on the D&D 5e character sheet.
 
 - `module.json`: manifest. Module id is `color-coded-5e` and must match the folder name Foundry sees.
 - `src/main.ts`: TypeScript entry point. Built by Vite to `dist/main.js` (gitignored, referenced by `esmodules`).
-- `src/shared.ts`: module id, logger, tag defaults, `resolveTag`/`getColorTag`, the condition helpers (`getApplicableConditions`, `conditionsMet`), and `applyTag`, which both the actor sheet rows and the window's preview use.
+- `src/shared.ts`: module id, logger, tag defaults, `resolveTag`/`getColorTag`, the condition helpers (`getApplicableConditions`, `getUnmetConditions`, `conditionsMet`), and `applyTag`, which both the actor sheet rows and the window's preview use.
 - `src/color-tag-config.ts`: the color tag window (`DocumentSheetV2` + `HandlebarsApplicationMixin`) and `openColorTagConfig`. Saving goes through `DocumentSheetV2`'s own submit (inputs are named `flags.color-coded-5e.*`); Remove deletes the whole flag scope. The preview row mirrors dnd5e's inventory row markup, with columns filled from the item's own data.
 - `templates/`: Handlebars templates, served by Foundry from `modules/color-coded-5e/templates/`. Also listed in the release workflow's zip.
 - `styles/color-coded-5e.css`: plain CSS, loaded directly by Foundry (not bundled) so hot reload works.
@@ -41,4 +41,5 @@ A FoundryVTT module that color-codes items on the D&D 5e character sheet.
 ## Conventions
 
 - Prefix CSS classes and data attributes with `cc5e` to avoid collisions with other modules.
+- Log through `log` in `src/shared.ts` (prefixed with the module id): `info` for user actions (save, remove), `debug` for internals (shown only at the console's Verbose level), `warn`/`error` for unexpected states. Don't log per input event while dragging.
 - Colors are per item, stored as flags under `flags.color-coded-5e` (see `ItemColorFlags` in `src/types.d.ts`). There are no module settings.
