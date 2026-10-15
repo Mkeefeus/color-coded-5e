@@ -1,5 +1,14 @@
 import type { DeepPartial } from 'fvtt-types/utils';
-import { DEFAULTS, MODULE_ID, getColorTag, log, getApplicableConditions, ApplicableConditions } from './shared';
+import {
+  DEFAULTS,
+  MODULE_ID,
+  getColorTag,
+  log,
+  getApplicableConditions,
+  ApplicableConditions,
+  applyTag,
+  resolveTag,
+} from './shared';
 
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
 const { fields } = foundry.data;
@@ -72,6 +81,107 @@ const TAG_FIELDS = {
   },
 };
 
+/**
+ * One column in the preview row, mirroring a column next to the item on the dnd5e sheet. A column with neither
+ * `text` nor `icon` is drawn empty, which dnd5e shows as a dash.
+ */
+interface PreviewColumn {
+  /** dnd5e's column id. The template adds it as the `item-<id>` class so dnd5e's column styles apply. */
+  id: string;
+  /** Width in pixels, from dnd5e's InventoryElement.COLUMNS. */
+  width: number;
+  empty: boolean;
+  text?: string;
+  /** Class for the text span: dnd5e uses `value` for numbers and `condensed` for labels. */
+  textClass?: string;
+  /** Shown after the text as `text / max` (uses). */
+  max?: string;
+  /** Font Awesome icon shown before the text (weight). */
+  faIcon?: string;
+  /** Image or SVG path shown instead of text (spell school). */
+  icon?: string;
+  /** dnd5e currency key, shown as a coin after the text (price). */
+  currency?: string;
+}
+
+// The dnd5e item data the preview columns read. fvtt-types doesn't know dnd5e's labels or system fields.
+interface Dnd5eItemData {
+  labels?: {
+    recovery?: string;
+    range?: string;
+    target?: string;
+    damages?: { formula?: string }[];
+  };
+  system: {
+    quantity?: number;
+    price?: { value?: number; denomination?: string };
+    /** A Promise for containers, whose weight includes their contents. */
+    totalWeight?: number | Promise<number>;
+    uses?: { value?: number; max?: number | string };
+    school?: string;
+  };
+}
+
+// The dnd5e config isn't typed, so describe the one piece the preview reads from it.
+interface Dnd5eSchoolConfig {
+  DND5E?: { spellSchools?: Record<string, { icon?: string } | undefined> };
+}
+
+// Item types listed in the inventory tab. `backpack` is dnd5e's legacy name for containers.
+const PHYSICAL_ITEM_TYPES = new Set(['weapon', 'equipment', 'consumable', 'tool', 'loot', 'container', 'backpack']);
+
+type PreviewColumnInput = Omit<PreviewColumn, 'empty'>;
+
+/**
+ * The columns the sheet shows next to this item, filled with what the sheet would show where the item's own data has
+ * it. Column sets and widths follow dnd5e 5.3.3 (InventoryElement.COLUMNS and the section definitions): inventory
+ * items get price, weight and quantity, features get recovery, uses and formula, and spells get school, range and
+ * target. The controls column is left out. Other item types (class, background, ...) aren't listed with columns.
+ */
+const getPreviewColumns = async (item: Item.Implementation): Promise<PreviewColumn[]> => {
+  const { labels, system } = item as unknown as Dnd5eItemData;
+  const type = item.type as string;
+  let columns: PreviewColumnInput[] = [];
+
+  if (PHYSICAL_ITEM_TYPES.has(type)) {
+    // The sheet shows the stack's total weight rounded to 0.1.
+    const weight = await system.totalWeight;
+    const price = system.price?.value ? system.price : undefined;
+    columns = [
+      { id: 'price', width: 80, text: price ? String(price.value) : undefined, currency: price?.denomination },
+      {
+        id: 'weight',
+        width: 60,
+        text: weight ? String(Math.round(weight * 10) / 10) : undefined,
+        faIcon: 'fa-solid fa-weight-hanging',
+      },
+      { id: 'quantity', width: 70, text: String(system.quantity ?? 0), textClass: 'value' },
+    ];
+  } else if (type === 'feat') {
+    const uses = system.uses?.max ? system.uses : undefined;
+    columns = [
+      { id: 'recovery', width: 60, text: labels?.recovery || undefined, textClass: 'condensed' },
+      {
+        id: 'uses',
+        width: 70,
+        text: uses ? String(uses.value ?? 0) : undefined,
+        textClass: 'value',
+        max: uses ? String(uses.max) : undefined,
+      },
+      { id: 'formula', width: 80, text: labels?.damages?.[0]?.formula || undefined, textClass: 'formula' },
+    ];
+  } else if (type === 'spell') {
+    const schools = (CONFIG as unknown as Dnd5eSchoolConfig).DND5E?.spellSchools;
+    columns = [
+      { id: 'school', width: 40, icon: system.school ? schools?.[system.school]?.icon : undefined },
+      { id: 'range', width: 50, text: labels?.range || undefined, textClass: 'condensed' },
+      { id: 'target', width: 80, text: labels?.target || undefined, textClass: 'condensed' },
+    ];
+  }
+
+  return columns.map((column) => ({ ...column, empty: !column.text && !column.icon }));
+};
+
 interface RenderContext
   extends
     foundry.applications.api.HandlebarsApplicationMixin.RenderContext,
@@ -84,6 +194,8 @@ interface RenderContext
   applicableConditions: ApplicableConditions;
   /** Whether any condition applies, so the conditions section can be hidden when none do. */
   hasConditions: boolean;
+  /** Columns after the name in the preview row, so a "name" width fill looks different from "full". */
+  previewColumns: PreviewColumn[];
 }
 
 interface Configuration
@@ -117,7 +229,8 @@ export class ColorTagConfig extends ItemSheetBase {
   static override DEFAULT_OPTIONS = {
     classes: ['cc5e-color-tag-config'],
     sheetConfig: false,
-    position: { width: 480 },
+    // Wide enough for the preview's name plus up to three columns.
+    position: { width: 560 },
     window: {
       contentClasses: ['standard-form'],
       icon: 'fa-solid fa-palette',
@@ -163,24 +276,67 @@ export class ColorTagConfig extends ItemSheetBase {
       buttons,
       hasConditions,
       applicableConditions,
+      previewColumns: await getPreviewColumns(this.document),
     });
+  }
+
+  // The preview row in the template, or null if it isn't rendered.
+  #previewRow() {
+    return this.element.querySelector<HTMLElement>('[data-cc5e-preview]');
+  }
+
+  // The tag the form currently describes, including changes that haven't been saved yet.
+  #tagFromForm(): ColorTag {
+    if (!this.form) {
+      return DEFAULTS;
+    }
+    const formData = new foundry.applications.ux.FormDataExtended(this.form);
+    const expanded = foundry.utils.expandObject(formData.object) as {
+      flags?: { [MODULE_ID]?: ItemColorFlags };
+    };
+    const tag = resolveTag(expanded.flags?.[MODULE_ID] ?? {});
+    // A cleared color text box submits '', which would make --cc5e-color invalid and hide the fill.
+    return tag.color ? tag : { ...tag, color: DEFAULTS.color };
   }
 
   protected override async _onRender(context: DeepPartial<RenderContext>, options: DeepPartial<RenderOptions>) {
     await super._onRender(context, options);
-    // TODO: listen for `input` on this.form so the preview follows the color picker while dragging.
-    //  `_onChangeForm` only runs on `change`, which the color picker fires once a color is picked.
+    // Applies the tag or defaults to the preview on open
+    const row = this.#previewRow();
+    if (row) {
+      applyTag(row, getColorTag(this.document) ?? DEFAULTS);
+    }
+  }
+
+  protected override async _onFirstRender(context: DeepPartial<RenderContext>, options: DeepPartial<RenderOptions>) {
+    await super._onFirstRender(context, options);
+    this.form?.addEventListener('input', (event) => {
+      // Handle color intensity live as its moving
+      if (!(event.target instanceof HTMLInputElement)) {
+        return;
+      }
+      const input = event.target;
+      log.debug(input);
+      if (input.type === 'range') {
+        this.#previewRow()?.style.setProperty('--cc5e-intensity', `${input.valueAsNumber}%`);
+      } else if (input.type === 'color') {
+        this.#previewRow()?.style.setProperty('--cc5e-color', input.value);
+      }
+    });
   }
 
   protected override _onChangeForm(formConfig: foundry.applications.api.ApplicationV2.FormConfiguration, event: Event) {
     super._onChangeForm(formConfig, event);
-    // TODO: read the form and apply the values to the preview row.
+    const element = this.#previewRow();
+    if (!element) {
+      return;
+    }
+    applyTag(element, this.#tagFromForm());
   }
 
-  // Remove button in the footer.
   static async #onRemove(this: ColorTagConfig) {
-    // TODO: unset the tag flags on this.document, then close.
-    log.debug('remove clicked', this.document.name);
+    await this.document.update({ [`flags.-=${MODULE_ID}`]: null } as Item.UpdateData);
+    await this.close();
   }
 }
 

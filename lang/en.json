@@ -1,7 +1,8 @@
 {
   "CC5e": {
     "ContextMenu": {
-      "ColorTag": "Add Color Tag"
+      "AddColorTag": "Add Color Tag",
+      "EditColorTag": "Edit Color Tag"
     },
     "ColorTagConfig": {
       "Title": "Color Tag",

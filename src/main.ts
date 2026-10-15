@@ -1,23 +1,26 @@
 import { openColorTagConfig } from './color-tag-config';
-import { conditionsMet, getColorTag, log } from './shared';
+import { applyTag, conditionsMet, getColorTag, log } from './shared';
 
 type ItemSheetV2 = foundry.applications.sheets.ItemSheetV2.Any;
 
 const addContextMenuEntry = (item: Item.Implementation, menuItems: ItemContextMenuEntry[]) => {
+  const tag = getColorTag(item);
   menuItems.push({
-    name: 'CC5e.ContextMenu.ColorTag',
+    name: tag ? 'CC5e.ContextMenu.EditColorTag' : 'CC5e.ContextMenu.AddColorTag',
     icon: '<i class="fa-solid fa-palette fa-fw"></i>',
-    condition: () => item.isOwner,
+    condition: () => item.isOwner && !item.compendium?.locked,
     callback: () => openColorTagConfig(item),
   });
 };
 
 const addControlHeaderMenuEntry = (app: ItemSheetV2, controls: HeaderControl[]) => {
+  const item = app.item;
+  const tag = getColorTag(item);
   controls.push({
     icon: 'fa-solid fa-palette', // class string, not HTML like the other menu
-    label: 'CC5e.ContextMenu.ColorTag',
+    label: tag ? 'CC5e.ContextMenu.EditColorTag' : 'CC5e.ContextMenu.AddColorTag',
     action: 'cc5eColorTag',
-    visible: () => app.document.isOwner,
+    visible: () => app.isEditable,
     onClick: () => openColorTagConfig(app.document),
   });
 };
@@ -56,12 +59,7 @@ Hooks.once('init', () => {
         clearRow(itemElement);
         return;
       }
-      itemElement.setAttribute('data-cc5e', 'true');
-      itemElement.setAttribute('data-cc5e-style', colorTag.style);
-      itemElement.setAttribute('data-cc5e-width', colorTag.width);
-      itemElement.setAttribute('data-cc5e-add-border', colorTag.addBorder.toString());
-      itemElement.style.setProperty('--cc5e-color', colorTag.color);
-      itemElement.style.setProperty('--cc5e-intensity', `${colorTag.intensity.toString()}%`);
+      applyTag(itemElement, colorTag);
     });
   });
 });

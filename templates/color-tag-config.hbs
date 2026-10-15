@@ -2,7 +2,10 @@
   {{! Preview row. Mirrors a row from dnd5e's templates/inventory/inventory.hbs so the sheet's styles apply:
         dnd5e scopes them under .dnd5e2 .items-section .item. The .dnd5e2 wrapper sits around the preview only,
         so dnd5e's form styles (inputs, selects, fieldsets) don't restyle the rest of this window.
-        The sheet's columns (quantity, uses, controls), subtitle and tags need sheet data, so they're left out.
+        The subtitle and tags need sheet data, so they're left out. The columns after the name copy the sheet's
+        markup (item-detail item-<id>, empty for a dash) but are filled from the item's own data in _prepareContext,
+        since dnd5e's column templates read data only the sheet prepares. They also make the "name" width fill stop
+        short of the row edge, as it does on the sheet.
         The module stylesheet colors the row once the data-cc5e attributes and variables are set on the li. }}
   <fieldset>
     <legend>{{localize 'CC5e.ColorTagConfig.Preview'}}</legend>
@@ -17,6 +20,17 @@
                   <span class='title'>{{document.name}}</span>
                 </div>
               </div>
+              {{#each previewColumns}}
+                <div class='item-detail item-{{id}} {{ifThen empty "empty" ""}}' style='flex: 0 0 {{width}}px'>
+                  {{#if icon}}<dnd5e-icon src='{{icon}}'></dnd5e-icon>{{/if}}
+                  {{#if text}}
+                    {{#if faIcon}}<i class='{{faIcon}}' inert></i>{{/if}}
+                    <span class='{{textClass}}'>{{text}}</span>
+                    {{#if max}}<span class='separator'>&sol;</span><span class='max'>{{max}}</span>{{/if}}
+                    {{#if currency}}<i class='currency {{currency}}' inert></i>{{/if}}
+                  {{/if}}
+                </div>
+              {{/each}}
             </div>
           </li>
         </ol>

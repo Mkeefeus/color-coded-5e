@@ -22,20 +22,23 @@ export const DEFAULTS: ColorTag = {
   },
 };
 
+// Fill in any keys missing from stored (or submitted) tag data from the defaults.
+export const resolveTag = (flags: ItemColorFlags): ColorTag => ({
+  ...DEFAULTS,
+  ...flags,
+  conditions: {
+    ...DEFAULTS.conditions,
+    ...flags.conditions,
+  },
+});
+
 // The item's color tag with defaults filled in, or undefined when the item isn't tagged (no color set).
 export const getColorTag = (item: Item.Implementation): ColorTag | undefined => {
   const flags = item.flags[MODULE_ID];
   if (!flags?.color) {
     return undefined;
   }
-  return {
-    ...DEFAULTS,
-    ...flags,
-    conditions: {
-      ...DEFAULTS.conditions,
-      ...flags.conditions,
-    },
-  };
+  return resolveTag(flags);
 };
 
 // The dnd5e system data isn't typed, so describe the fields the conditions read. All are optional because which
@@ -100,4 +103,13 @@ export const conditionsMet = (item: Item.Implementation, tag: ColorTag) => {
   return (Object.keys(state) as ConditionKey[]).every(
     (key) => tag.conditions[key] !== 'required' || !applicable[key] || state[key]
   );
+};
+
+export const applyTag = (element: HTMLElement, tag: ColorTag) => {
+  element.setAttribute('data-cc5e', 'true');
+  element.setAttribute('data-cc5e-style', tag.style);
+  element.setAttribute('data-cc5e-width', tag.width);
+  element.setAttribute('data-cc5e-add-border', tag.addBorder.toString());
+  element.style.setProperty('--cc5e-color', tag.color);
+  element.style.setProperty('--cc5e-intensity', `${tag.intensity.toString()}%`);
 };
