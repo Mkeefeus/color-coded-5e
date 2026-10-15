@@ -263,7 +263,7 @@ export class ColorTagConfig extends ItemSheetBase {
       { type: 'submit', icon: 'fa-solid fa-floppy-disk', label: 'CC5e.ColorTagConfig.Save' },
     ];
     if (tag) {
-      buttons.push({
+      buttons.unshift({
         type: 'button',
         icon: 'fa-solid fa-trash',
         label: 'CC5e.ColorTagConfig.Remove',
